@@ -41,22 +41,23 @@ function calculateForecastScenario(
 
   // Realistic lift curve based on actual CRO process:
   // - Month 1: Research period (audit, strategy) - no tests live, no lift
-  // - Month 2: First tests go live end of M1/start M2, minimal results
-  // - Month 3-6: Results ramp as wins compound (4-5 tests/month, ~30% win rate)
+  // - Month 2: First tests go live week 3, early wins coming in
+  // - Month 3: Break-even point - wins compounding
+  // - Month 4-6: Strong momentum building
   // - Month 7+: Full target lift achieved, sustained with ongoing testing
   const liftCurve: Record<number, number> = {
     1: 0,      // Research only - no lift
-    2: 0.05,   // First tests starting to show results
-    3: 0.15,   // Wins starting to compound
-    4: 0.30,   // Building momentum
-    5: 0.50,   // Halfway to target
-    6: 0.70,   // Strong results building
-    7: 0.85,   // Approaching full target
-    8: 0.92,   // Near full optimization
-    9: 0.96,   // Fine-tuning
-    10: 0.98,  // Sustained
-    11: 0.99,  // Sustained
-    12: 1.00   // Full target achieved
+    2: 0.15,   // First tests live, early wins
+    3: 0.35,   // Break-even territory, wins compounding
+    4: 0.55,   // Strong momentum
+    5: 0.70,   // Building toward target
+    6: 0.82,   // Approaching full optimization
+    7: 0.90,   // Near full target
+    8: 0.95,   // Fine-tuning
+    9: 0.98,   // Sustained
+    10: 0.99,  // Sustained
+    11: 1.00,  // Full target achieved
+    12: 1.00   // Sustained
   };
 
   for (let m = 1; m <= months; m++) {
@@ -618,9 +619,10 @@ Get your free CRO audit: https://impactcro.com`;
                   <p className="font-medium text-[#10222b]">Forecast assumptions:</p>
                   <ul className="space-y-0.5 text-[#565656]">
                     <li>• <strong>Month 1:</strong> Research period (audit, strategy) — no tests live</li>
-                    <li>• <strong>Months 2-6:</strong> Results ramp as wins compound (4-5 tests/month, ~30% win rate)</li>
+                    <li>• <strong>Month 2:</strong> First tests go live week 3, early wins coming in</li>
+                    <li>• <strong>Month 3:</strong> Break-even territory as wins compound</li>
+                    <li>• <strong>Months 4-6:</strong> Strong momentum building (4-5 tests/month, ~30% win rate)</li>
                     <li>• <strong>Month 7+:</strong> Full target achieved, sustained with ongoing optimization</li>
-                    <li>• Partial traffic impact factored in (tests affect specific pages/segments)</li>
                   </ul>
                 </div>
               </div>
