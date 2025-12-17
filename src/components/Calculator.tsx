@@ -63,7 +63,8 @@ function calculateForecastScenario(
     cumInvest += investment;
 
     // Current month's achieved lift (percentage of target)
-    const achievedLiftPct = liftCurve[m] || 1;
+    // Use nullish coalescing (??) instead of || to handle 0 correctly
+    const achievedLiftPct = liftCurve[m] ?? 1;
     const currentLift = targetLift * achievedLiftPct;
 
     // Calculate incremental revenue for THIS month based on current lift
