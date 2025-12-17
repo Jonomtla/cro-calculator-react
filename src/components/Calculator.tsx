@@ -38,22 +38,42 @@ function calculateForecastScenario(
   const results: ForecastResult[] = [];
   let cumInvest = 0;
   let cumValue = 0;  // Either cumulative profit or cumulative revenue
-  let cumulativeLift = 0;
 
+  // Realistic lift curve based on actual CRO process:
+  // - Month 1: Research period (audit, strategy) - no tests live, no lift
+  // - Month 2: First tests go live end of M1/start M2, minimal results
+  // - Month 3-6: Results ramp as wins compound (4-5 tests/month, ~30% win rate)
+  // - Month 7+: Full target lift achieved, sustained with ongoing testing
   const liftCurve: Record<number, number> = {
-    1: 0, 2: 0.08, 3: 0.20, 4: 0.35, 5: 0.50,
-    6: 0.63, 7: 0.73, 8: 0.81, 9: 0.88, 10: 0.93, 11: 0.97, 12: 1
+    1: 0,      // Research only - no lift
+    2: 0.05,   // First tests starting to show results
+    3: 0.15,   // Wins starting to compound
+    4: 0.30,   // Building momentum
+    5: 0.50,   // Halfway to target
+    6: 0.70,   // Strong results building
+    7: 0.85,   // Approaching full target
+    8: 0.92,   // Near full optimization
+    9: 0.96,   // Fine-tuning
+    10: 0.98,  // Sustained
+    11: 0.99,  // Sustained
+    12: 1.00   // Full target achieved
   };
 
   for (let m = 1; m <= months; m++) {
     cumInvest += investment;
-    cumulativeLift = targetLift * (liftCurve[m] || 1);
 
-    const improvedRevenue = revenue * (1 + cumulativeLift / 100);
-    const incrementalRevenue = improvedRevenue - revenue;
+    // Current month's achieved lift (percentage of target)
+    const achievedLiftPct = liftCurve[m] || 1;
+    const currentLift = targetLift * achievedLiftPct;
+
+    // Calculate incremental revenue for THIS month based on current lift
+    const improvedRevenue = revenue * (1 + currentLift / 100);
+    const monthlyIncrementalRevenue = improvedRevenue - revenue;
 
     // If useRevenueMode, track incremental revenue; otherwise track incremental profit
-    const monthlyValue = useRevenueMode ? incrementalRevenue : incrementalRevenue * (margin / 100);
+    const monthlyValue = useRevenueMode
+      ? monthlyIncrementalRevenue
+      : monthlyIncrementalRevenue * (margin / 100);
     cumValue += monthlyValue;
 
     results.push({ cumInvest, cumProfit: cumValue, net: cumValue - cumInvest });
@@ -588,12 +608,22 @@ Get your free CRO audit: https://impactcro.com`;
               isRevenueMode={useRevenueMode}
             />
 
-            <p className="mt-4 text-xs text-[#565656] flex items-center gap-2">
-              <svg className="w-4 h-4 text-[#9abbd8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Forecast assumes Month 1 research, Month 2 ramping (75% velocity), Month 3+ full testing. Each win compounds permanently.
-            </p>
+            <div className="mt-4 p-4 bg-[#f4faff] border border-[#9abbd8]/20 rounded-xl">
+              <div className="flex items-start gap-2 text-xs text-[#565656]">
+                <svg className="w-4 h-4 text-[#9abbd8] mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="space-y-1">
+                  <p className="font-medium text-[#10222b]">Forecast assumptions:</p>
+                  <ul className="space-y-0.5 text-[#565656]">
+                    <li>• <strong>Month 1:</strong> Research period (audit, strategy) — no tests live</li>
+                    <li>• <strong>Months 2-6:</strong> Results ramp as wins compound (4-5 tests/month, ~30% win rate)</li>
+                    <li>• <strong>Month 7+:</strong> Full target achieved, sustained with ongoing optimization</li>
+                    <li>• Partial traffic impact factored in (tests affect specific pages/segments)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
