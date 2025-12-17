@@ -39,29 +39,25 @@ function calculateForecastScenario(
   let cumInvest = 0;
   let cumValue = 0;  // Either cumulative profit or cumulative revenue
 
-  // Realistic CRO lift curve based on:
-  // - 4-5 tests per month after research
-  // - ~30% win rate
-  // - Each win adds ~2-3% lift on average
-  // - Wins are PERMANENT and compound
-  //
-  // Month 1: Research (0%)
-  // Month 2: First tests launch week 3, ~1 win expected (0% implemented yet)
-  // Month 3: First wins go live, ~2 wins total (~15% of target)
-  // Month 4+: Steady wins accumulating
+  // Lift curve based on test velocity:
+  // - 5-6 tests per month after research
+  // - 35% win rate = ~1.9 wins/month
+  // - Each win adds toward target lift
+  // - 11 testing months (M2-M12) to reach 100%
+  // - Wins are permanent and stack
   const liftCurve: Record<number, number> = {
     1: 0,      // Research period - no tests
-    2: 0.05,   // Tests launching, minimal results yet
-    3: 0.15,   // First wins implemented
-    4: 0.28,   // More wins accumulating
-    5: 0.42,   // Building momentum
-    6: 0.56,   // Strong progress
-    7: 0.68,   // Continued growth
-    8: 0.78,   // Approaching target
-    9: 0.86,   // Near target
-    10: 0.92,  // Fine-tuning
-    11: 0.96,  // Almost there
-    12: 1.00   // Full target achieved
+    2: 0.09,   // ~1.9 wins
+    3: 0.18,   // ~3.8 wins
+    4: 0.27,   // ~5.8 wins
+    5: 0.36,   // ~7.7 wins
+    6: 0.45,   // ~9.6 wins
+    7: 0.55,   // ~11.6 wins
+    8: 0.64,   // ~13.5 wins
+    9: 0.73,   // ~15.4 wins
+    10: 0.82,  // ~17.3 wins
+    11: 0.91,  // ~19.3 wins
+    12: 1.00   // ~21 wins - full target
   };
 
   for (let m = 1; m <= months; m++) {
@@ -623,10 +619,9 @@ Get your free CRO audit: https://impactcro.com`;
                   <p className="font-medium text-[#10222b]">Forecast assumptions:</p>
                   <ul className="space-y-0.5 text-[#565656]">
                     <li>• <strong>Month 1:</strong> Research period (audit, strategy) — no tests live</li>
-                    <li>• <strong>Month 2:</strong> First tests launch week 3</li>
-                    <li>• <strong>Months 3-6:</strong> Wins compound (4-5 tests/month, ~30% win rate)</li>
-                    <li>• <strong>Months 7-12:</strong> Continued optimization toward full target</li>
-                    <li>• All wins are permanent and stack</li>
+                    <li>• <strong>Months 2-12:</strong> ~5-6 tests/month at 35% win rate</li>
+                    <li>• Each win adds ~10% average uplift (relative to current CR)</li>
+                    <li>• All wins are permanent and stack toward target</li>
                   </ul>
                 </div>
               </div>
