@@ -79,7 +79,14 @@ export default function ForecastChart({
   return (
     <div className="bg-white border-2 border-[#9abbd8]/20 p-6 rounded-2xl card-shadow animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
-        <h4 className="text-sm font-semibold text-[#10222b]">Net {isRevenueMode ? 'Revenue' : 'Profit'} Over Time</h4>
+        <div className="flex items-center gap-2">
+          <h4 className="text-sm font-semibold text-[#10222b]">Net {isRevenueMode ? 'Revenue' : 'Profit'} Over Time</h4>
+          {isRevenueMode && (
+            <span className="text-[10px] font-semibold bg-[#9abbd8]/20 text-[#4e7597] px-2 py-1 rounded">
+              TOPLINE REVENUE
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full bg-[#4e7597]" />

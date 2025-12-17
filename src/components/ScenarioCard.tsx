@@ -71,8 +71,13 @@ export default function ScenarioCard({
         {profit}
       </div>
 
-      <div className="text-sm text-[#565656] mb-3">
+      <div className="text-sm text-[#565656] mb-3 flex items-center gap-2">
         Year 1 Net {isRevenueMode ? 'Revenue' : 'Profit'}
+        {isRevenueMode && (
+          <span className="text-[10px] font-semibold bg-[#9abbd8]/20 text-[#4e7597] px-1.5 py-0.5 rounded">
+            TOPLINE
+          </span>
+        )}
       </div>
 
       <div className="text-xs text-[#4e7597] bg-white/50 rounded-lg px-3 py-2">
