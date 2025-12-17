@@ -42,23 +42,21 @@ function calculateForecastScenario(
   // Compounding lift curve based on actual CRO process:
   // - Month 1: Research period (audit, strategy) - no tests live, no lift
   // - Month 2: First tests go live week 3, early wins coming in
-  // - Month 3: Break-even point - wins compounding
-  // - Month 4-6: Strong momentum building (exponential growth phase)
-  // - Month 7+: Full target lift achieved, sustained with ongoing testing
-  // Curve designed to show compounding effect (slow start, accelerating middle, plateau at end)
+  // - Month 3+: Continuous optimization, wins compound throughout the year
+  // Curve shows steady acceleration - we keep optimizing all year, no plateau
   const liftCurve: Record<number, number> = {
     1: 0,      // Research only - no lift
     2: 0.08,   // First tests live, very early wins
-    3: 0.20,   // Break-even territory, wins starting to compound
-    4: 0.38,   // Compounding acceleration
-    5: 0.55,   // Strong momentum (steepest part of curve)
-    6: 0.72,   // Continuing acceleration
-    7: 0.85,   // Approaching plateau
-    8: 0.92,   // Near full target
-    9: 0.96,   // Fine-tuning
-    10: 0.98,  // Sustained
-    11: 1.00,  // Full target achieved
-    12: 1.00   // Sustained
+    3: 0.18,   // Wins starting to compound
+    4: 0.30,   // Building momentum
+    5: 0.42,   // Steady growth
+    6: 0.54,   // Continuing acceleration
+    7: 0.66,   // Strong momentum
+    8: 0.76,   // Compounding nicely
+    9: 0.85,   // Approaching target
+    10: 0.92,  // Near full optimization
+    11: 0.97,  // Almost there
+    12: 1.00   // Full target achieved
   };
 
   for (let m = 1; m <= months; m++) {
