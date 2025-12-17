@@ -66,19 +66,20 @@ export default function ForecastChart({
   bestData,
   isRevenueMode = false,
 }: ForecastChartProps) {
+  // Use net values (cumulative profit/revenue minus investment) for consistency with the cards
   const chartData = Array.from({ length: 12 }, (_, i) => ({
     month: `M${i + 1}`,
     fullMonth: `Month ${i + 1}`,
     investment: conservativeData[i]?.cumInvest || 0,
-    conservative: conservativeData[i]?.cumProfit || 0,
-    target: targetData[i]?.cumProfit || 0,
-    best: bestData[i]?.cumProfit || 0,
+    conservative: conservativeData[i]?.net || 0,
+    target: targetData[i]?.net || 0,
+    best: bestData[i]?.net || 0,
   }));
 
   return (
     <div className="bg-white border-2 border-[#9abbd8]/20 p-6 rounded-2xl card-shadow animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
-        <h4 className="text-sm font-semibold text-[#10222b]">Cumulative {isRevenueMode ? 'Revenue' : 'Profit'} Over Time</h4>
+        <h4 className="text-sm font-semibold text-[#10222b]">Net {isRevenueMode ? 'Revenue' : 'Profit'} Over Time</h4>
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full bg-[#4e7597]" />
