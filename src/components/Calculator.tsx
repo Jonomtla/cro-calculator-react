@@ -109,7 +109,6 @@ export default function Calculator() {
     });
 
     if (loaded) {
-      // Recalculate derived values
       const s = parseFloat(searchParams.get('sessions') || String(sessions));
       const c = parseFloat(searchParams.get('cr') || String(cr));
       if (s > 0 && c > 0) {
@@ -169,16 +168,6 @@ export default function Calculator() {
   const cacReduction = cac - improvedCAC;
   const cacReductionPct = cac > 0 ? (cacReduction / cac) * 100 : 0;
 
-  const netProfit = (incProfit - invest) * mult;
-  const roi = invest > 0 ? (netProfit / (invest * mult)) * 100 : 0;
-  const payback = invest > 0 && incProfit > 0 ? invest / incProfit : 0;
-
-  const getPaybackString = () => {
-    if (payback < 1) return `${(payback * 30).toFixed(0)} days`;
-    if (payback < 12) return `${payback.toFixed(1)} months`;
-    return `${(payback / 12).toFixed(1)} years`;
-  };
-
   // Forecast calculations
   const conservativeForecast = calculateForecastScenario(revenue, margin, invest, 10, 12);
   const targetForecast = calculateForecastScenario(revenue, margin, invest, 20, 12);
@@ -187,10 +176,13 @@ export default function Calculator() {
   const showForecast = invest > 0 && margin > 0;
 
   const copyResults = () => {
-    const text = `Current ${period} Revenue: ${formatCurrency(revenue * mult)}
+    const text = `CRO ROI Calculator Results
+━━━━━━━━━━━━━━━━━━━━━━━━━
+Current ${period} Revenue: ${formatCurrency(revenue * mult)}
 Projected ${period} Revenue: ${formatCurrency((revenue + incRev) * mult)}
 Incremental ${period} Revenue: +${formatCurrency(incRev * mult)}
-Incremental ${period} Profit: ${formatCurrency(incProfit * mult)}`;
+Incremental ${period} Profit: ${formatCurrency(incProfit * mult)}
+${cac > 0 ? `\nCAC Reduction: -${formatCAC(cacReduction)} (${cacReductionPct.toFixed(1)}%)` : ''}`;
 
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
@@ -199,181 +191,258 @@ Incremental ${period} Profit: ${formatCurrency(incProfit * mult)}`;
   };
 
   return (
-    <div className="bg-white p-6 md:p-8 rounded-xl shadow-lg max-w-2xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+      <div className="text-center mb-10">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-indigo-400 text-sm font-medium mb-4">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Conversion Rate Optimization
+        </div>
+        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
           CRO ROI Calculator
         </h1>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-          <strong>Smart Auto-Sync:</strong> Change any field and related values update automatically
+        <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+          Calculate your potential revenue gains from conversion rate optimization.
+          Fields auto-sync as you type for seamless calculations.
+        </p>
+      </div>
+
+      {/* Main Grid */}
+      <div className="grid lg:grid-cols-5 gap-6">
+        {/* Inputs Panel */}
+        <div className="lg:col-span-2 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-indigo-500/20 rounded-lg">
+              <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-white">Your Metrics</h2>
+          </div>
+
+          <div className="space-y-4">
+            <InputField
+              label="Monthly Sessions"
+              value={sessions}
+              onChange={syncFromSessions}
+            />
+            <InputField
+              label="Conversion Rate"
+              hint="auto-syncs"
+              value={cr}
+              onChange={syncFromCr}
+              step="0.01"
+              suffix="%"
+            />
+            <InputField
+              label="Target Lift"
+              value={lift}
+              onChange={setLift}
+              step="0.1"
+              suffix="%"
+            />
+
+            <div className="border-t border-slate-700/50 my-5" />
+
+            <InputField
+              label="Monthly Revenue"
+              hint="auto-syncs"
+              value={revenue}
+              onChange={setRevenue}
+              prefix="$"
+            />
+            <InputField
+              label="Monthly Sales"
+              hint="auto-syncs"
+              value={sales}
+              onChange={syncFromSales}
+            />
+            <InputField
+              label="AOV"
+              hint="calculated"
+              value={aov.toFixed(2)}
+              onChange={() => {}}
+              readOnly
+              prefix="$"
+            />
+
+            <div className="border-t border-slate-700/50 my-5" />
+
+            <InputField
+              label="Gross Margin"
+              hint="optional"
+              value={margin}
+              onChange={setMargin}
+              step="0.01"
+              suffix="%"
+            />
+            <InputField
+              label="Current CAC"
+              hint="optional"
+              value={cac}
+              onChange={setCac}
+              prefix="$"
+            />
+            <InputField
+              label="CRO Investment"
+              hint="monthly"
+              value={invest || ''}
+              onChange={setInvest}
+              prefix="$"
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Inputs */}
-      <div className="space-y-1">
-        <InputField
-          label="Monthly Sessions"
-          value={sessions}
-          onChange={syncFromSessions}
-        />
-        <InputField
-          label="Baseline Conversion Rate"
-          hint="auto-syncs"
-          value={cr}
-          onChange={syncFromCr}
-          step="0.01"
-          suffix="%"
-        />
-        <InputField
-          label="Target Lift"
-          value={lift}
-          onChange={setLift}
-          step="0.1"
-          suffix="%"
-        />
-        <InputField
-          label="Monthly Revenue"
-          hint="auto-syncs"
-          value={revenue}
-          onChange={setRevenue}
-          prefix="$"
-        />
-        <InputField
-          label="Monthly Sales"
-          hint="auto-syncs"
-          value={sales}
-          onChange={syncFromSales}
-        />
-        <InputField
-          label="AOV"
-          hint="auto-calculated"
-          value={aov.toFixed(2)}
-          onChange={() => {}}
-          readOnly
-          prefix="$"
-        />
-        <InputField
-          label="Gross Margin"
-          hint="optional"
-          value={margin}
-          onChange={setMargin}
-          step="0.01"
-          suffix="%"
-        />
-        <InputField
-          label="Current CAC"
-          hint="optional"
-          value={cac}
-          onChange={setCac}
-          prefix="$"
-        />
-        <InputField
-          label="CRO Investment (Monthly)"
-          hint="optional"
-          value={invest || ''}
-          onChange={setInvest}
-          prefix="$"
-        />
-      </div>
+        {/* Results Panel */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Revenue Impact Card */}
+          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-500/20 rounded-lg">
+                  <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-semibold text-white">Revenue Impact</h2>
+              </div>
 
-      {/* Results */}
-      <div className="mt-8 p-6 bg-gray-50 border-2 border-gray-200 rounded-xl">
-        <h2 className="text-xl font-bold text-gray-900 mb-5">Results</h2>
+              {/* Period Toggle */}
+              <div className="flex items-center bg-slate-700/50 rounded-lg p-1">
+                <button
+                  onClick={() => setYearly(false)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                    !yearly
+                      ? 'bg-indigo-500 text-white shadow-lg'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setYearly(true)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                    yearly
+                      ? 'bg-indigo-500 text-white shadow-lg'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Yearly
+                </button>
+              </div>
+            </div>
 
-        <ResultItem
-          label={`Current ${period} Revenue:`}
-          value={formatCurrency(revenue * mult)}
-          variant="baseline"
-        />
-        <ResultItem
-          label={`Projected ${period} Revenue:`}
-          value={formatCurrency((revenue + incRev) * mult)}
-          variant="highlight"
-        />
-        <ResultItem
-          label={`Incremental ${period} Revenue:`}
-          value={`+${formatCurrency(incRev * mult)}`}
-          variant="highlight"
-          highlighted
-        />
-        <ResultItem
-          label={`Incremental ${period} Profit:`}
-          value={margin > 0 ? formatCurrency(incProfit * mult) : '—'}
-          variant={margin > 0 ? 'highlight' : 'muted'}
-        />
-
-        {/* CAC Section */}
-        {cac > 0 && (
-          <div className="mt-6 pt-6 border-t-2 border-gray-200">
-            <h3 className="font-bold text-gray-900 mb-4">CAC Impact</h3>
             <ResultItem
-              label="Current CAC:"
-              value={formatCAC(cac)}
+              label={`Current ${period} Revenue`}
+              value={formatCurrency(revenue * mult)}
               variant="baseline"
             />
             <ResultItem
-              label="Improved CAC:"
-              value={formatCAC(improvedCAC)}
+              label={`Projected ${period} Revenue`}
+              value={formatCurrency((revenue + incRev) * mult)}
               variant="highlight"
             />
             <ResultItem
-              label="Reduction:"
-              value={`-${formatCAC(cacReduction)} (${cacReductionPct.toFixed(1)}%)`}
+              label={`Incremental ${period} Revenue`}
+              value={`+${formatCurrency(incRev * mult)}`}
               variant="highlight"
               highlighted
             />
-          </div>
-        )}
+            <ResultItem
+              label={`Incremental ${period} Profit`}
+              value={margin > 0 ? formatCurrency(incProfit * mult) : '—'}
+              variant={margin > 0 ? 'default' : 'muted'}
+            />
 
-        {/* Controls */}
-        <div className="mt-6 flex flex-wrap gap-3">
-          <button
-            onClick={() => setYearly(!yearly)}
-            className={`px-4 py-2 border-2 rounded-lg font-semibold text-sm transition-all
-              ${yearly
-                ? 'bg-blue-500 border-blue-500 text-white'
-                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
-          >
-            Switch to {yearly ? 'Monthly' : 'Yearly'}
-          </button>
-          <button
-            onClick={copyResults}
-            className="px-4 py-2 border-2 border-gray-300 rounded-lg font-semibold text-sm bg-white text-gray-700 hover:bg-gray-50 transition-all"
-          >
-            Copy Results
-          </button>
-          {copied && (
-            <span className="text-emerald-600 text-sm font-medium self-center">
-              Copied!
-            </span>
+            {/* Copy Button */}
+            <div className="mt-6 flex items-center gap-3">
+              <button
+                onClick={copyResults}
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 rounded-xl text-sm font-medium text-slate-300 hover:text-white transition-all"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Copy Results
+              </button>
+              {copied && (
+                <span className="flex items-center gap-1 text-emerald-400 text-sm animate-fade-in">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Copied!
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* CAC Impact Card */}
+          {cac > 0 && (
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-semibold text-white">CAC Impact</h2>
+              </div>
+
+              <ResultItem
+                label="Current CAC"
+                value={formatCAC(cac)}
+                variant="baseline"
+              />
+              <ResultItem
+                label="Improved CAC"
+                value={formatCAC(improvedCAC)}
+                variant="highlight"
+              />
+              <ResultItem
+                label="CAC Reduction"
+                value={`-${formatCAC(cacReduction)} (${cacReductionPct.toFixed(1)}%)`}
+                variant="highlight"
+                highlighted
+              />
+            </div>
           )}
         </div>
       </div>
 
       {/* Forecast Section */}
       {showForecast && (
-        <div className="mt-8 p-6 bg-slate-100 border-2 border-slate-300 rounded-xl">
-          <h3 className="text-lg font-bold text-gray-900 mb-5">12-Month Forecast</h3>
+        <div className="mt-8 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-amber-500/20 rounded-lg">
+              <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white">12-Month Forecast</h2>
+              <p className="text-sm text-slate-400">Projected outcomes across different scenarios</p>
+            </div>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid md:grid-cols-3 gap-4 mb-6">
             <ScenarioCard
-              title="Conservative Scenario"
+              title="Conservative"
               profit={formatProfit(conservativeForecast.year1Profit)}
-              detail={`10% conversion lift · ${conservativeForecast.year1ROI.toFixed(1)}% ROI`}
+              detail={`10% lift · ${conservativeForecast.year1ROI.toFixed(0)}% ROI`}
               variant="conservative"
             />
             <ScenarioCard
-              title="Target Scenario"
+              title="Target"
               profit={formatProfit(targetForecast.year1Profit)}
-              detail={`20% conversion lift · ${targetForecast.year1ROI.toFixed(1)}% ROI`}
+              detail={`20% lift · ${targetForecast.year1ROI.toFixed(0)}% ROI`}
               variant="target"
             />
             <ScenarioCard
-              title="Best Case Scenario"
+              title="Best Case"
               profit={formatProfit(bestForecast.year1Profit)}
-              detail={`40% conversion lift · ${bestForecast.year1ROI.toFixed(1)}% ROI`}
+              detail={`40% lift · ${bestForecast.year1ROI.toFixed(0)}% ROI`}
               variant="best"
             />
           </div>
@@ -384,11 +453,19 @@ Incremental ${period} Profit: ${formatCurrency(incProfit * mult)}`;
             bestData={bestForecast.results}
           />
 
-          <p className="mt-4 text-xs text-slate-500 italic">
-            Forecast assumes Month 1 research only, Month 2 ramping (75% velocity), Month 3+ full testing. Each win compounds permanently.
+          <p className="mt-4 text-xs text-slate-500 flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Forecast assumes Month 1 research, Month 2 ramping (75% velocity), Month 3+ full testing. Each win compounds permanently.
           </p>
         </div>
       )}
+
+      {/* Footer */}
+      <div className="mt-8 text-center text-slate-500 text-sm">
+        <p>Built for marketers and CRO professionals</p>
+      </div>
     </div>
   );
 }
