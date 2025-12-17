@@ -9,7 +9,6 @@ interface InputFieldProps {
   readOnly?: boolean;
   prefix?: string;
   suffix?: string;
-  icon?: React.ReactNode;
 }
 
 export default function InputField({
@@ -21,22 +20,20 @@ export default function InputField({
   readOnly = false,
   prefix,
   suffix,
-  icon,
 }: InputFieldProps) {
   return (
     <div className="group">
-      <label className="flex items-center gap-2 mb-2 text-sm font-medium text-slate-300">
-        {icon && <span className="text-slate-400">{icon}</span>}
+      <label className="flex items-center gap-2 mb-2 text-sm font-medium text-[#10222b]">
         {label}
         {hint && (
-          <span className="font-normal text-slate-500 text-xs px-2 py-0.5 bg-slate-700/50 rounded-full">
+          <span className="font-normal text-[#4e7597] text-xs px-2 py-0.5 bg-[#4e7597]/10 rounded-full">
             {hint}
           </span>
         )}
       </label>
       <div className="relative">
         {prefix && (
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4e7597] font-medium">
             {prefix}
           </span>
         )}
@@ -46,17 +43,18 @@ export default function InputField({
           onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
           step={step}
           readOnly={readOnly}
-          className={`w-full py-3.5 bg-slate-800/50 border border-slate-600/50 rounded-xl text-base text-white
-            placeholder:text-slate-500
-            focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:bg-slate-800
-            hover:border-slate-500 hover:bg-slate-800/70
+          className={`w-full py-3.5 bg-white border-2 border-[#9abbd8]/30 rounded-xl text-base text-[#10222b]
+            placeholder:text-[#9abbd8]
+            focus:outline-none focus:border-[#4e7597] focus:ring-4 focus:ring-[#4e7597]/10
+            hover:border-[#9abbd8] hover:bg-[#f4faff]
+            transition-all duration-200
             ${prefix ? 'pl-10 pr-4' : 'px-4'}
             ${suffix ? 'pr-12' : ''}
-            ${readOnly ? 'bg-slate-800/30 text-slate-400 cursor-not-allowed border-slate-700/50' : ''}
+            ${readOnly ? 'bg-[#f2efe6] text-[#565656] cursor-not-allowed border-[#bfbfbf]/30' : ''}
           `}
         />
         {suffix && (
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#4e7597] font-medium">
             {suffix}
           </span>
         )}

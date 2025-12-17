@@ -41,16 +41,16 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-xl">
-        <p className="text-slate-300 font-medium mb-2">{label}</p>
+      <div className="bg-white border-2 border-[#9abbd8]/30 rounded-xl p-4 shadow-lg">
+        <p className="text-[#10222b] font-semibold mb-2">{label}</p>
         {payload.map((entry, index) => (
           <div key={index} className="flex items-center gap-2 text-sm">
             <div
               className="w-3 h-3 rounded-full"
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-slate-400">{entry.name}:</span>
-            <span className="text-white font-semibold">{formatValue(entry.value)}</span>
+            <span className="text-[#565656]">{entry.name}:</span>
+            <span className="text-[#10222b] font-semibold">{formatValue(entry.value)}</span>
           </div>
         ))}
       </div>
@@ -74,21 +74,21 @@ export default function ForecastChart({
   }));
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 p-6 rounded-2xl">
+    <div className="bg-white border-2 border-[#9abbd8]/20 p-6 rounded-2xl card-shadow animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
-        <h4 className="text-sm font-semibold text-slate-300">Cumulative Profit Over Time</h4>
+        <h4 className="text-sm font-semibold text-[#10222b]">Cumulative Profit Over Time</h4>
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-blue-400" />
-            <span className="text-slate-400">Conservative</span>
+            <div className="w-3 h-3 rounded-full bg-[#4e7597]" />
+            <span className="text-[#565656]">Conservative</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-emerald-400" />
-            <span className="text-slate-400">Target</span>
+            <div className="w-3 h-3 rounded-full bg-[#72ab7f]" />
+            <span className="text-[#565656]">Target</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-amber-400" />
-            <span className="text-slate-400">Best Case</span>
+            <div className="w-3 h-3 rounded-full bg-[#7e84e5]" />
+            <span className="text-[#565656]">Best Case</span>
           </div>
         </div>
       </div>
@@ -98,32 +98,32 @@ export default function ForecastChart({
           <AreaChart data={chartData}>
             <defs>
               <linearGradient id="colorConservative" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#60a5fa" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#4e7597" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#4e7597" stopOpacity={0}/>
               </linearGradient>
               <linearGradient id="colorTarget" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#34d399" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#34d399" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#72ab7f" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#72ab7f" stopOpacity={0}/>
               </linearGradient>
               <linearGradient id="colorBest" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#fbbf24" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#7e84e5" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#7e84e5" stopOpacity={0}/>
               </linearGradient>
               <linearGradient id="colorInvest" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.2}/>
-                <stop offset="95%" stopColor="#94a3b8" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#bfbfbf" stopOpacity={0.2}/>
+                <stop offset="95%" stopColor="#bfbfbf" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(154, 187, 216, 0.2)" />
             <XAxis
               dataKey="month"
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
+              tick={{ fontSize: 11, fill: '#565656' }}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
               tickFormatter={formatValue}
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
+              tick={{ fontSize: 11, fill: '#565656' }}
               tickLine={false}
               axisLine={false}
               width={60}
@@ -132,7 +132,7 @@ export default function ForecastChart({
             <Area
               type="monotone"
               dataKey="investment"
-              stroke="#94a3b8"
+              stroke="#bfbfbf"
               strokeWidth={2}
               strokeDasharray="5 5"
               fillOpacity={1}
@@ -142,7 +142,7 @@ export default function ForecastChart({
             <Area
               type="monotone"
               dataKey="conservative"
-              stroke="#60a5fa"
+              stroke="#4e7597"
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorConservative)"
@@ -151,7 +151,7 @@ export default function ForecastChart({
             <Area
               type="monotone"
               dataKey="target"
-              stroke="#34d399"
+              stroke="#72ab7f"
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorTarget)"
@@ -160,7 +160,7 @@ export default function ForecastChart({
             <Area
               type="monotone"
               dataKey="best"
-              stroke="#fbbf24"
+              stroke="#7e84e5"
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorBest)"
