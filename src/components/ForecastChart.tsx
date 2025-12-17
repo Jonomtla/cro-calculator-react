@@ -66,22 +66,22 @@ export default function ForecastChart({
   bestData,
   isRevenueMode = false,
 }: ForecastChartProps) {
-  // Show net values (profit minus investment) to match the scenario cards
-  // Clamp to 0 minimum so lines don't go negative on the chart
+  // Show cumulative profit/revenue vs cumulative investment
+  // This lets you see when profit line crosses above investment (break-even)
   const chartData = Array.from({ length: 12 }, (_, i) => ({
     month: `M${i + 1}`,
     fullMonth: `Month ${i + 1}`,
     investment: conservativeData[i]?.cumInvest || 0,
-    conservative: Math.max(0, conservativeData[i]?.net || 0),
-    target: Math.max(0, targetData[i]?.net || 0),
-    best: Math.max(0, bestData[i]?.net || 0),
+    conservative: conservativeData[i]?.cumProfit || 0,
+    target: targetData[i]?.cumProfit || 0,
+    best: bestData[i]?.cumProfit || 0,
   }));
 
   return (
     <div className="bg-white border-2 border-[#9abbd8]/20 p-6 rounded-2xl card-shadow animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <h4 className="text-sm font-semibold text-[#10222b]">Net {isRevenueMode ? 'Revenue' : 'Profit'} Over Time</h4>
+          <h4 className="text-sm font-semibold text-[#10222b]">Cumulative {isRevenueMode ? 'Revenue' : 'Profit'} vs Investment</h4>
           {isRevenueMode && (
             <span className="text-[10px] font-semibold bg-[#9abbd8]/20 text-[#4e7597] px-2 py-1 rounded">
               TOPLINE REVENUE

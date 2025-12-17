@@ -39,23 +39,28 @@ function calculateForecastScenario(
   let cumInvest = 0;
   let cumValue = 0;  // Either cumulative profit or cumulative revenue
 
-  // Compounding lift curve based on actual CRO process:
-  // - Month 1: Research period (audit, strategy) - no tests live, no lift
-  // - Month 2: First tests go live week 3, early wins coming in
-  // - Month 3+: Continuous optimization, wins compound throughout the year
-  // Curve shows steady acceleration - we keep optimizing all year, no plateau
+  // Realistic CRO lift curve based on:
+  // - 4-5 tests per month after research
+  // - ~30% win rate
+  // - Each win adds ~2-3% lift on average
+  // - Wins are PERMANENT and compound
+  //
+  // Month 1: Research (0%)
+  // Month 2: First tests launch week 3, ~1 win expected (0% implemented yet)
+  // Month 3: First wins go live, ~2 wins total (~15% of target)
+  // Month 4+: Steady wins accumulating
   const liftCurve: Record<number, number> = {
-    1: 0,      // Research only - no lift
-    2: 0.08,   // First tests live, very early wins
-    3: 0.18,   // Wins starting to compound
-    4: 0.30,   // Building momentum
-    5: 0.42,   // Steady growth
-    6: 0.54,   // Continuing acceleration
-    7: 0.66,   // Strong momentum
-    8: 0.76,   // Compounding nicely
-    9: 0.85,   // Approaching target
-    10: 0.92,  // Near full optimization
-    11: 0.97,  // Almost there
+    1: 0,      // Research period - no tests
+    2: 0.05,   // Tests launching, minimal results yet
+    3: 0.15,   // First wins implemented
+    4: 0.28,   // More wins accumulating
+    5: 0.42,   // Building momentum
+    6: 0.56,   // Strong progress
+    7: 0.68,   // Continued growth
+    8: 0.78,   // Approaching target
+    9: 0.86,   // Near target
+    10: 0.92,  // Fine-tuning
+    11: 0.96,  // Almost there
     12: 1.00   // Full target achieved
   };
 
@@ -618,10 +623,10 @@ Get your free CRO audit: https://impactcro.com`;
                   <p className="font-medium text-[#10222b]">Forecast assumptions:</p>
                   <ul className="space-y-0.5 text-[#565656]">
                     <li>• <strong>Month 1:</strong> Research period (audit, strategy) — no tests live</li>
-                    <li>• <strong>Month 2:</strong> First tests go live week 3, early wins coming in</li>
-                    <li>• <strong>Month 3:</strong> Break-even territory as wins compound</li>
-                    <li>• <strong>Months 4-6:</strong> Strong momentum building (4-5 tests/month, ~30% win rate)</li>
-                    <li>• <strong>Month 7+:</strong> Full target achieved, sustained with ongoing optimization</li>
+                    <li>• <strong>Month 2:</strong> First tests launch week 3</li>
+                    <li>• <strong>Months 3-6:</strong> Wins compound (4-5 tests/month, ~30% win rate)</li>
+                    <li>• <strong>Months 7-12:</strong> Continued optimization toward full target</li>
+                    <li>• All wins are permanent and stack</li>
                   </ul>
                 </div>
               </div>
