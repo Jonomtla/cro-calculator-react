@@ -20,6 +20,7 @@ interface ForecastChartProps {
   conservativeData: ForecastResult[];
   targetData: ForecastResult[];
   bestData: ForecastResult[];
+  isRevenueMode?: boolean;
 }
 
 const formatValue = (value: number) => {
@@ -63,6 +64,7 @@ export default function ForecastChart({
   conservativeData,
   targetData,
   bestData,
+  isRevenueMode = false,
 }: ForecastChartProps) {
   const chartData = Array.from({ length: 12 }, (_, i) => ({
     month: `M${i + 1}`,
@@ -76,7 +78,7 @@ export default function ForecastChart({
   return (
     <div className="bg-white border-2 border-[#9abbd8]/20 p-6 rounded-2xl card-shadow animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
-        <h4 className="text-sm font-semibold text-[#10222b]">Cumulative Profit Over Time</h4>
+        <h4 className="text-sm font-semibold text-[#10222b]">Cumulative {isRevenueMode ? 'Revenue' : 'Profit'} Over Time</h4>
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full bg-[#4e7597]" />

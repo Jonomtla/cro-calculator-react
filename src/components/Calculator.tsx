@@ -9,13 +9,13 @@ import ForecastChart from './ForecastChart';
 
 interface ForecastResult {
   cumInvest: number;
-  cumProfit: number;
+  cumProfit: number;  // Can be profit or revenue depending on mode
   net: number;
 }
 
 interface ForecastScenario {
   results: ForecastResult[];
-  year1Profit: number;
+  year1Profit: number;  // Can be profit or revenue depending on mode
   year1ROI: number;
 }
 
@@ -32,11 +32,12 @@ function calculateForecastScenario(
   margin: number,
   investment: number,
   targetLift: number,
-  months: number
+  months: number,
+  useRevenueMode: boolean = false  // true = show revenue, false = show profit
 ): ForecastScenario {
   const results: ForecastResult[] = [];
   let cumInvest = 0;
-  let cumProfit = 0;
+  let cumValue = 0;  // Either cumulative profit or cumulative revenue
   let cumulativeLift = 0;
 
   const liftCurve: Record<number, number> = {
@@ -49,16 +50,19 @@ function calculateForecastScenario(
     cumulativeLift = targetLift * (liftCurve[m] || 1);
 
     const improvedRevenue = revenue * (1 + cumulativeLift / 100);
-    const monthlyProfit = (improvedRevenue - revenue) * (margin / 100);
-    cumProfit += monthlyProfit;
+    const incrementalRevenue = improvedRevenue - revenue;
 
-    results.push({ cumInvest, cumProfit, net: cumProfit - cumInvest });
+    // If useRevenueMode, track incremental revenue; otherwise track incremental profit
+    const monthlyValue = useRevenueMode ? incrementalRevenue : incrementalRevenue * (margin / 100);
+    cumValue += monthlyValue;
+
+    results.push({ cumInvest, cumProfit: cumValue, net: cumValue - cumInvest });
   }
 
-  const year1Profit = results[11]?.net || 0;
-  const year1ROI = cumInvest > 0 ? (year1Profit / cumInvest) * 100 : 0;
+  const year1Value = results[11]?.net || 0;
+  const year1ROI = cumInvest > 0 ? (year1Value / cumInvest) * 100 : 0;
 
-  return { results, year1Profit, year1ROI };
+  return { results, year1Profit: year1Value, year1ROI };
 }
 
 export default function Calculator() {
@@ -172,12 +176,14 @@ export default function Calculator() {
     ? (invest / (margin / 100)) / (sessions * (cr / 100) * aov) * 100
     : 0;
 
-  // Forecast calculations
-  const conservativeForecast = calculateForecastScenario(revenue, margin, invest, 10, 12);
-  const targetForecast = calculateForecastScenario(revenue, margin, invest, 20, 12);
-  const bestForecast = calculateForecastScenario(revenue, margin, invest, 40, 12);
+  // Forecast calculations - use revenue mode if margin is not provided
+  const useRevenueMode = margin <= 0;
+  const conservativeForecast = calculateForecastScenario(revenue, margin, invest, 10, 12, useRevenueMode);
+  const targetForecast = calculateForecastScenario(revenue, margin, invest, 20, 12, useRevenueMode);
+  const bestForecast = calculateForecastScenario(revenue, margin, invest, 40, 12, useRevenueMode);
 
-  const showForecast = invest > 0 && margin > 0;
+  // Show forecast if investment is provided (works with or without margin)
+  const showForecast = invest > 0;
 
   // Generate shareable link
   const generateShareableLink = () => {
@@ -545,6 +551,7 @@ Get your free CRO audit: https://impactcro.com`;
                 detail={`10% lift · ${conservativeForecast.year1ROI.toFixed(0)}% ROI`}
                 variant="conservative"
                 animationDelay={100}
+                isRevenueMode={useRevenueMode}
               />
               <ScenarioCard
                 title="Target"
@@ -552,6 +559,7 @@ Get your free CRO audit: https://impactcro.com`;
                 detail={`20% lift · ${targetForecast.year1ROI.toFixed(0)}% ROI`}
                 variant="target"
                 animationDelay={200}
+                isRevenueMode={useRevenueMode}
               />
               <ScenarioCard
                 title="Best Case"
@@ -559,6 +567,7 @@ Get your free CRO audit: https://impactcro.com`;
                 detail={`40% lift · ${bestForecast.year1ROI.toFixed(0)}% ROI`}
                 variant="best"
                 animationDelay={300}
+                isRevenueMode={useRevenueMode}
               />
             </div>
 
@@ -566,6 +575,7 @@ Get your free CRO audit: https://impactcro.com`;
               conservativeData={conservativeForecast.results}
               targetData={targetForecast.results}
               bestData={bestForecast.results}
+              isRevenueMode={useRevenueMode}
             />
 
             <p className="mt-4 text-xs text-[#565656] flex items-center gap-2">

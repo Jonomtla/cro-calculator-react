@@ -6,6 +6,7 @@ interface ScenarioCardProps {
   detail: string;
   variant: 'conservative' | 'target' | 'best';
   animationDelay?: number;
+  isRevenueMode?: boolean;
 }
 
 export default function ScenarioCard({
@@ -14,6 +15,7 @@ export default function ScenarioCard({
   detail,
   variant,
   animationDelay = 0,
+  isRevenueMode = false,
 }: ScenarioCardProps) {
   const variants = {
     conservative: {
@@ -70,7 +72,7 @@ export default function ScenarioCard({
       </div>
 
       <div className="text-sm text-[#565656] mb-3">
-        Year 1 Net Profit
+        Year 1 Net {isRevenueMode ? 'Revenue' : 'Profit'}
       </div>
 
       <div className="text-xs text-[#4e7597] bg-white/50 rounded-lg px-3 py-2">
