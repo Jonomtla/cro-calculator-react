@@ -71,6 +71,7 @@ export default function ForecastChart({
   const chartData = Array.from({ length: 12 }, (_, i) => ({
     month: `M${i + 1}`,
     fullMonth: `Month ${i + 1}`,
+    investment: conservativeData[i]?.cumInvest || 0,
     conservative: Math.max(0, conservativeData[i]?.net || 0),
     target: Math.max(0, targetData[i]?.net || 0),
     best: Math.max(0, bestData[i]?.net || 0),
@@ -139,6 +140,15 @@ export default function ForecastChart({
               width={60}
             />
             <Tooltip content={<CustomTooltip />} />
+            <Area
+              type="monotone"
+              dataKey="investment"
+              stroke="#bfbfbf"
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              fillOpacity={0}
+              name="Investment"
+            />
             <Area
               type="monotone"
               dataKey="conservative"
