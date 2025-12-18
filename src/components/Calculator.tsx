@@ -250,9 +250,9 @@ export default function Calculator() {
     const forecastSection = showForecast ? `
 12-MONTH FORECAST (Year 1 ${useRevenueMode ? 'Revenue' : 'Net Profit'})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Conservative (10% lift): ${formatProfit(conservativeForecast.year1Profit)}${invest > 0 ? ` · ${conservativeForecast.year1ROI.toFixed(0)}% ROI` : ''}
-Target (20% lift): ${formatProfit(targetForecast.year1Profit)}${invest > 0 ? ` · ${targetForecast.year1ROI.toFixed(0)}% ROI` : ''}
-Best Case (40% lift): ${formatProfit(bestForecast.year1Profit)}${invest > 0 ? ` · ${bestForecast.year1ROI.toFixed(0)}% ROI` : ''}
+Conservative (10% lift): ${formatProfit(conservativeForecast.year1Profit)}${invest > 0 && !useRevenueMode ? ` · ${conservativeForecast.year1ROI.toFixed(0)}% ROI` : ''}
+Target (20% lift): ${formatProfit(targetForecast.year1Profit)}${invest > 0 && !useRevenueMode ? ` · ${targetForecast.year1ROI.toFixed(0)}% ROI` : ''}
+Best Case (40% lift): ${formatProfit(bestForecast.year1Profit)}${invest > 0 && !useRevenueMode ? ` · ${bestForecast.year1ROI.toFixed(0)}% ROI` : ''}
 ` : '';
 
     const text = `CRO ROI CALCULATOR RESULTS
@@ -643,7 +643,7 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
               <ScenarioCard
                 title="Conservative"
                 profit={formatProfit(conservativeForecast.year1Profit)}
-                detail={invest > 0 ? `10% lift · ${conservativeForecast.year1ROI.toFixed(0)}% ROI` : '10% lift target'}
+                detail={invest > 0 && !useRevenueMode ? `10% lift · ${conservativeForecast.year1ROI.toFixed(0)}% ROI` : '10% lift target'}
                 variant="conservative"
                 animationDelay={100}
                 isRevenueMode={useRevenueMode}
@@ -651,7 +651,7 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
               <ScenarioCard
                 title="Target"
                 profit={formatProfit(targetForecast.year1Profit)}
-                detail={invest > 0 ? `20% lift · ${targetForecast.year1ROI.toFixed(0)}% ROI` : '20% lift target'}
+                detail={invest > 0 && !useRevenueMode ? `20% lift · ${targetForecast.year1ROI.toFixed(0)}% ROI` : '20% lift target'}
                 variant="target"
                 animationDelay={200}
                 isRevenueMode={useRevenueMode}
@@ -659,7 +659,7 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
               <ScenarioCard
                 title="Best Case"
                 profit={formatProfit(bestForecast.year1Profit)}
-                detail={invest > 0 ? `40% lift · ${bestForecast.year1ROI.toFixed(0)}% ROI` : '40% lift target'}
+                detail={invest > 0 && !useRevenueMode ? `40% lift · ${bestForecast.year1ROI.toFixed(0)}% ROI` : '40% lift target'}
                 variant="best"
                 animationDelay={300}
                 isRevenueMode={useRevenueMode}
