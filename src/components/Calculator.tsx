@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import InputField from './InputField';
 import ResultItem from './ResultItem';
 import ScenarioCard from './ScenarioCard';
@@ -294,9 +296,6 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
     setIsExporting(true);
 
     try {
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
-
       // Create canvas with specific options for better compatibility
       const canvas = await html2canvas(reportRef.current, {
         scale: 2,
@@ -304,8 +303,6 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
         allowTaint: true,
         backgroundColor: '#f2efe6',
         logging: false,
-        windowWidth: reportRef.current.scrollWidth,
-        windowHeight: reportRef.current.scrollHeight,
       });
 
       const imgData = canvas.toDataURL('image/png', 1.0);
@@ -318,7 +315,7 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
       const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
       const pdf = new jsPDF({
-        orientation: imgHeight > pdfHeight ? 'portrait' : 'portrait',
+        orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
       });
