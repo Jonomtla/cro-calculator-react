@@ -107,6 +107,11 @@ input[type="number"]:hover::-webkit-outer-spin-button {
   50% { transform: translateY(-5px); }
 }
 
+@keyframes bounceSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
@@ -141,6 +146,10 @@ input[type="number"]:hover::-webkit-outer-spin-button {
 
 .animate-float {
   animation: float 3s ease-in-out infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounceSubtle 2s ease-in-out infinite;
 }
 
 .animate-count-up {

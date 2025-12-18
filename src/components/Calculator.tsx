@@ -39,34 +39,31 @@ function calculateForecastScenario(
   let cumInvest = 0;
   let cumValue = 0;  // Either cumulative profit or cumulative revenue
 
-  // Lift curve based on test velocity:
-  // - 5-6 tests per month after research
-  // - 35% win rate = ~1.9 wins/month
-  // - Each win adds toward target lift
-  // - 11 testing months (M2-M12) to reach 100%
-  // - Wins are permanent and stack
-  const liftCurve: Record<number, number> = {
-    1: 0,      // Research period - no tests
-    2: 0.09,   // ~1.9 wins
-    3: 0.18,   // ~3.8 wins
-    4: 0.27,   // ~5.8 wins
-    5: 0.36,   // ~7.7 wins
-    6: 0.45,   // ~9.6 wins
-    7: 0.55,   // ~11.6 wins
-    8: 0.64,   // ~13.5 wins
-    9: 0.73,   // ~15.4 wins
-    10: 0.82,  // ~17.3 wins
-    11: 0.91,  // ~19.3 wins
-    12: 1.00   // ~21 wins - full target
-  };
+  // Realistic CRO model based on industry benchmarks:
+  // - Month 1: Research/audit period (no tests)
+  // - Months 2-12: ~5-6 tests/month at 35% win rate = ~2 wins/month
+  // - Average uplift per win: ~3% (conservative end of 3-7% industry range)
+  // - Wins compound multiplicatively (1.03 × 1.03 = 1.0609, not 1.06)
+  // - ~22 wins over 11 testing months
+
+  // Calculate wins per month (cumulative)
+  const winsPerMonth = 2; // ~5.5 tests × 35% win rate
+  const avgUpliftPerWin = 0.03; // 3% per win (conservative industry benchmark)
 
   for (let m = 1; m <= months; m++) {
     cumInvest += investment;
 
-    // Current month's achieved lift (percentage of target)
-    // Use nullish coalescing (??) instead of || to handle 0 correctly
-    const achievedLiftPct = liftCurve[m] ?? 1;
-    const currentLift = targetLift * achievedLiftPct;
+    // Month 1 = research, no wins yet
+    // After that, wins accumulate: M2 = 2 wins, M3 = 4 wins, etc.
+    const totalWins = m === 1 ? 0 : (m - 1) * winsPerMonth;
+
+    // Compound the wins multiplicatively: (1 + 0.05)^wins
+    // But cap at target lift to avoid unrealistic projections
+    const compoundedMultiplier = Math.pow(1 + avgUpliftPerWin, totalWins);
+    const compoundedLiftPct = (compoundedMultiplier - 1) * 100; // Convert to percentage
+
+    // Cap at target lift (the scenario's max)
+    const currentLift = Math.min(compoundedLiftPct, targetLift);
 
     // Calculate incremental revenue for THIS month based on current lift
     const improvedRevenue = revenue * (1 + currentLift / 100);
@@ -90,6 +87,7 @@ function calculateForecastScenario(
 export default function Calculator() {
   const searchParams = useSearchParams();
   const reportRef = useRef<HTMLDivElement>(null);
+  const forecastRef = useRef<HTMLDivElement>(null);
 
   const [sessions, setSessions] = useState(350000);
   const [cr, setCr] = useState(2);
@@ -104,6 +102,23 @@ export default function Calculator() {
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(true);
+
+  // Track if forecast is in view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowScrollButton(!entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+
+    if (forecastRef.current) {
+      observer.observe(forecastRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   // Load from URL params on mount
   useEffect(() => {
@@ -204,8 +219,8 @@ export default function Calculator() {
   const targetForecast = calculateForecastScenario(revenue, margin, invest, 20, 12, useRevenueMode);
   const bestForecast = calculateForecastScenario(revenue, margin, invest, 40, 12, useRevenueMode);
 
-  // Show forecast if investment is provided (works with or without margin)
-  const showForecast = invest > 0;
+  // Always show forecast (works with or without investment/margin)
+  const showForecast = revenue > 0;
 
   // Generate shareable link
   const generateShareableLink = () => {
@@ -551,9 +566,10 @@ Get your free CRO audit: https://impactcro.com`;
           </div>
         </div>
 
+
         {/* Forecast Section */}
         {showForecast && (
-          <div className="mt-8 bg-white border-2 border-[#9abbd8]/20 rounded-2xl p-6 card-shadow animate-slide-up">
+          <div ref={forecastRef} className="mt-4 bg-white border-2 border-[#9abbd8]/20 rounded-2xl p-6 card-shadow animate-slide-up scroll-mt-4">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-[#7e84e5]/10 rounded-lg">
@@ -580,7 +596,7 @@ Get your free CRO audit: https://impactcro.com`;
               <ScenarioCard
                 title="Conservative"
                 profit={formatProfit(conservativeForecast.year1Profit)}
-                detail={`10% lift · ${conservativeForecast.year1ROI.toFixed(0)}% ROI`}
+                detail={invest > 0 ? `10% lift · ${conservativeForecast.year1ROI.toFixed(0)}% ROI` : '10% lift target'}
                 variant="conservative"
                 animationDelay={100}
                 isRevenueMode={useRevenueMode}
@@ -588,7 +604,7 @@ Get your free CRO audit: https://impactcro.com`;
               <ScenarioCard
                 title="Target"
                 profit={formatProfit(targetForecast.year1Profit)}
-                detail={`20% lift · ${targetForecast.year1ROI.toFixed(0)}% ROI`}
+                detail={invest > 0 ? `20% lift · ${targetForecast.year1ROI.toFixed(0)}% ROI` : '20% lift target'}
                 variant="target"
                 animationDelay={200}
                 isRevenueMode={useRevenueMode}
@@ -596,7 +612,7 @@ Get your free CRO audit: https://impactcro.com`;
               <ScenarioCard
                 title="Best Case"
                 profit={formatProfit(bestForecast.year1Profit)}
-                detail={`40% lift · ${bestForecast.year1ROI.toFixed(0)}% ROI`}
+                detail={invest > 0 ? `40% lift · ${bestForecast.year1ROI.toFixed(0)}% ROI` : '40% lift target'}
                 variant="best"
                 animationDelay={300}
                 isRevenueMode={useRevenueMode}
@@ -619,9 +635,9 @@ Get your free CRO audit: https://impactcro.com`;
                   <p className="font-medium text-[#10222b]">Forecast assumptions:</p>
                   <ul className="space-y-0.5 text-[#565656]">
                     <li>• <strong>Month 1:</strong> Research period (audit, strategy) — no tests live</li>
-                    <li>• <strong>Months 2-12:</strong> ~5-6 tests/month at 35% win rate</li>
-                    <li>• Each win adds ~10% average uplift (relative to current CR)</li>
-                    <li>• All wins are permanent and stack toward target</li>
+                    <li>• <strong>Months 2-12:</strong> ~5-6 tests/month at 35% win rate (~2 wins/month)</li>
+                    <li>• Each win adds ~3% uplift on average (conservative end of 3-7% range)</li>
+                    <li>• Wins compound multiplicatively and cap at scenario target</li>
                   </ul>
                 </div>
               </div>
@@ -692,6 +708,22 @@ Get your free CRO audit: https://impactcro.com`;
           <span className="font-black text-[#10222b]">IMPACT.</span>
         </p>
       </div>
+
+      {/* Floating Scroll to Forecast Button */}
+      {showForecast && showScrollButton && (
+        <button
+          onClick={() => forecastRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#7e84e5] to-[#757bd6] hover:from-[#757bd6] hover:to-[#7e84e5] text-white rounded-full font-semibold shadow-xl hover:shadow-2xl transition-all z-50 no-print"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <span>View 12-Month Forecast</span>
+          <svg className="w-4 h-4 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
