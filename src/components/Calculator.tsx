@@ -245,16 +245,42 @@ export default function Calculator() {
   };
 
   const copyResults = () => {
-    const text = `CRO ROI Calculator Results - Powered by IMPACT.
+    const forecastSection = showForecast ? `
+12-MONTH FORECAST (Year 1 ${useRevenueMode ? 'Revenue' : 'Net Profit'})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Current ${period} Revenue: ${formatCurrency(revenue * mult)}
-Projected ${period} Revenue: ${formatCurrency((revenue + incRev) * mult)}
-Incremental ${period} Revenue: +${formatCurrency(incRev * mult)} (range: ${formatCurrency(incRevLow * mult)} - ${formatCurrency(incRevHigh * mult)})
-Incremental ${period} Profit: ${formatCurrency(incProfit * mult)}
-${cac > 0 ? `CAC Reduction: -${formatCAC(cacReduction)} (${cacReductionPct.toFixed(1)}%)` : ''}
-${invest > 0 ? `Break-even Lift Required: ${breakEvenLift.toFixed(1)}%` : ''}
+Conservative (10% lift): ${formatProfit(conservativeForecast.year1Profit)}${invest > 0 ? ` · ${conservativeForecast.year1ROI.toFixed(0)}% ROI` : ''}
+Target (20% lift): ${formatProfit(targetForecast.year1Profit)}${invest > 0 ? ` · ${targetForecast.year1ROI.toFixed(0)}% ROI` : ''}
+Best Case (40% lift): ${formatProfit(bestForecast.year1Profit)}${invest > 0 ? ` · ${bestForecast.year1ROI.toFixed(0)}% ROI` : ''}
+` : '';
 
-Get your free CRO audit: https://www.impactconversion.com/#book`;
+    const text = `CRO ROI CALCULATOR RESULTS
+Powered by IMPACT.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+YOUR INPUTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Monthly Sessions: ${sessions.toLocaleString()}
+Conversion Rate: ${cr.toFixed(2)}%
+Target Lift: ${lift}%
+Monthly Revenue: ${formatCurrency(revenue)}
+${margin > 0 ? `Gross Margin: ${margin}%` : ''}
+${invest > 0 ? `Monthly CRO Investment: ${formatCurrency(invest)}` : ''}
+
+${period.toUpperCase()} IMPACT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Current Revenue: ${formatCurrency(revenue * mult)}
+Projected Revenue: ${formatCurrency((revenue + incRev) * mult)}
+Incremental Revenue: +${formatCurrency(incRev * mult)}
+  └ Range: ${formatCurrency(incRevLow * mult)} - ${formatCurrency(incRevHigh * mult)}
+${margin > 0 ? `Incremental Profit: ${formatCurrency(incProfit * mult)}
+  └ Range: ${formatCurrency(incProfitLow * mult)} - ${formatCurrency(incProfitHigh * mult)}` : ''}
+${cac > 0 ? `
+CAC Impact: ${formatCAC(cac)} → ${formatCAC(improvedCAC)} (-${cacReductionPct.toFixed(1)}%)` : ''}
+${invest > 0 && margin > 0 ? `
+Break-even Lift Required: ${breakEvenLift.toFixed(1)}%${lift >= breakEvenLift ? ' ✓ Target exceeds this!' : ''}` : ''}
+${forecastSection}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Book your free CRO audit: https://www.impactconversion.com/#book`;
 
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
@@ -271,26 +297,50 @@ Get your free CRO audit: https://www.impactconversion.com/#book`;
       const html2canvas = (await import('html2canvas')).default;
       const jsPDF = (await import('jspdf')).default;
 
+      // Create canvas with specific options for better compatibility
       const canvas = await html2canvas(reportRef.current, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         backgroundColor: '#f2efe6',
+        logging: false,
+        windowWidth: reportRef.current.scrollWidth,
+        windowHeight: reportRef.current.scrollHeight,
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png', 1.0);
+
+      // A4 dimensions in mm
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
       const pdf = new jsPDF({
-        orientation: 'portrait',
+        orientation: imgHeight > pdfHeight ? 'portrait' : 'portrait',
         unit: 'mm',
         format: 'a4',
       });
 
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      // If content is taller than one page, handle multi-page
+      let heightLeft = imgHeight;
+      let position = 0;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
       pdf.save('CRO-ROI-Report-IMPACT.pdf');
     } catch (error) {
       console.error('PDF export failed:', error);
+      alert('PDF export failed. Please try again or use Copy Results instead.');
     } finally {
       setIsExporting(false);
     }
