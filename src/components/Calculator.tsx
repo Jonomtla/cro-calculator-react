@@ -41,35 +41,29 @@ function calculateForecastScenario(
   let cumInvest = 0;
   let cumValue = 0;  // Either cumulative profit or cumulative revenue
 
-  // Realistic CRO model based on industry benchmarks:
-  // - Month 1: Research/audit period (no tests)
-  // - Months 2-12: ~5-6 tests/month at 35% win rate = ~2 wins/month
-  // - Average uplift per win: ~3% (conservative end of 3-7% industry range)
-  // - Wins compound multiplicatively (1.03 × 1.03 = 1.0609, not 1.06)
-  // - ~22 wins over 11 testing months
-
-  // Calculate wins per month (cumulative)
-  const winsPerMonth = 2; // ~5.5 tests × 35% win rate
-  const avgUpliftPerWin = 0.03; // 3% per win (conservative industry benchmark)
+  // Realistic CRO ramp-up model:
+  // - Months 1-3: Research/audit/setup period (0% lift)
+  // - Months 4-12: Linear ramp from 0% to target lift
+  //
+  // Year 1 produces ~4.5-5 months worth of full target lift
+  // This reflects the reality that CRO programs take time to build momentum
 
   for (let m = 1; m <= months; m++) {
     cumInvest += investment;
 
-    // Month 1 = research, no wins yet
-    // After that, wins accumulate: M2 = 2 wins, M3 = 4 wins, etc.
-    const totalWins = m === 1 ? 0 : (m - 1) * winsPerMonth;
-
-    // Compound the wins multiplicatively: (1 + 0.05)^wins
-    // But cap at target lift to avoid unrealistic projections
-    const compoundedMultiplier = Math.pow(1 + avgUpliftPerWin, totalWins);
-    const compoundedLiftPct = (compoundedMultiplier - 1) * 100; // Convert to percentage
-
-    // Cap at target lift (the scenario's max)
-    const currentLift = Math.min(compoundedLiftPct, targetLift);
+    // Ramp with 3-month research/setup phase
+    // M1-3 = 0%, then linear ramp to target by M12
+    let rampProgress = 0;
+    if (m <= 3) {
+      rampProgress = 0; // Research/audit/setup phase
+    } else {
+      // Linear ramp from month 4 to 12 (9 testing months)
+      rampProgress = (m - 3) / 9; // 0.111, 0.222, ... 1.0
+    }
+    const currentLift = targetLift * rampProgress;
 
     // Calculate incremental revenue for THIS month based on current lift
-    const improvedRevenue = revenue * (1 + currentLift / 100);
-    const monthlyIncrementalRevenue = improvedRevenue - revenue;
+    const monthlyIncrementalRevenue = revenue * (currentLift / 100);
 
     // If useRevenueMode, track incremental revenue; otherwise track incremental profit
     const monthlyValue = useRevenueMode
@@ -681,10 +675,10 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
                 <div className="space-y-1">
                   <p className="font-medium text-[#10222b]">Forecast assumptions:</p>
                   <ul className="space-y-0.5 text-[#565656]">
-                    <li>• <strong>Month 1:</strong> Research period (audit, strategy) — no tests live</li>
-                    <li>• <strong>Months 2-12:</strong> ~5-6 tests/month at 35% win rate (~2 wins/month)</li>
-                    <li>• Each win adds ~3% uplift on average (conservative end of 3-7% range)</li>
-                    <li>• Wins compound multiplicatively and cap at scenario target</li>
+                    <li>• <strong>Months 1-3:</strong> Research period (audit, strategy, setup) — no lift yet</li>
+                    <li>• <strong>Months 4-12:</strong> Linear ramp from 0% to target lift</li>
+                    <li>• Full target lift achieved by end of Year 1</li>
+                    <li>• Year 1 cumulative equals ~5 months of full lift impact</li>
                   </ul>
                 </div>
               </div>
