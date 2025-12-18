@@ -42,23 +42,23 @@ function calculateForecastScenario(
   let cumValue = 0;  // Either cumulative profit or cumulative revenue
 
   // Realistic CRO ramp-up model:
-  // - Months 1-3: Research/audit/setup period (0% lift)
-  // - Months 4-12: Linear ramp from 0% to target lift
+  // - Months 1-2: Research/audit period (0% lift)
+  // - Months 3-12: Linear ramp from 0% to target lift
   //
-  // Year 1 produces ~4.5-5 months worth of full target lift
+  // Year 1 produces ~5.5 months worth of full target lift
   // This reflects the reality that CRO programs take time to build momentum
 
   for (let m = 1; m <= months; m++) {
     cumInvest += investment;
 
-    // Ramp with 3-month research/setup phase
-    // M1-3 = 0%, then linear ramp to target by M12
+    // Ramp with 2-month research/setup phase
+    // M1-2 = 0%, then linear ramp to target by M12
     let rampProgress = 0;
-    if (m <= 3) {
-      rampProgress = 0; // Research/audit/setup phase
+    if (m <= 2) {
+      rampProgress = 0; // Research/audit phase
     } else {
-      // Linear ramp from month 4 to 12 (9 testing months)
-      rampProgress = (m - 3) / 9; // 0.111, 0.222, ... 1.0
+      // Linear ramp from month 3 to 12 (10 testing months)
+      rampProgress = (m - 2) / 10; // 0.1, 0.2, ... 1.0
     }
     const currentLift = targetLift * rampProgress;
 
@@ -675,10 +675,10 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
                 <div className="space-y-1">
                   <p className="font-medium text-[#10222b]">Forecast assumptions:</p>
                   <ul className="space-y-0.5 text-[#565656]">
-                    <li>• <strong>Months 1-3:</strong> Research period (audit, strategy, setup) — no lift yet</li>
-                    <li>• <strong>Months 4-12:</strong> Linear ramp from 0% to target lift</li>
+                    <li>• <strong>Months 1-2:</strong> Research period (audit, strategy) — no lift yet</li>
+                    <li>• <strong>Months 3-12:</strong> Linear ramp from 0% to target lift</li>
                     <li>• Full target lift achieved by end of Year 1</li>
-                    <li>• Year 1 cumulative equals ~5 months of full lift impact</li>
+                    <li>• Year 1 cumulative equals ~5.5 months of full lift impact</li>
                   </ul>
                 </div>
               </div>
