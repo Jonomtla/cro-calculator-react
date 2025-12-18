@@ -254,7 +254,7 @@ Incremental ${period} Profit: ${formatCurrency(incProfit * mult)}
 ${cac > 0 ? `CAC Reduction: -${formatCAC(cacReduction)} (${cacReductionPct.toFixed(1)}%)` : ''}
 ${invest > 0 ? `Break-even Lift Required: ${breakEvenLift.toFixed(1)}%` : ''}
 
-Get your free CRO audit: https://impactcro.com`;
+Get your free CRO audit: https://www.impactconversion.com/#book`;
 
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
@@ -689,7 +689,7 @@ Get your free CRO audit: https://impactcro.com`;
           Get a free CRO audit from IMPACT and discover exactly where your conversion opportunities are hiding.
         </p>
         <a
-          href="https://impactcro.com"
+          href="https://www.impactconversion.com/#book"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-8 py-4 bg-[#72ab7f] hover:bg-[#4caf50] text-white font-bold rounded-xl transition-all hover-lift"
