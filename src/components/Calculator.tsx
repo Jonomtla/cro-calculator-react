@@ -65,16 +65,22 @@ function calculateForecastScenario(
     // Calculate incremental revenue for THIS month based on current lift
     const monthlyIncrementalRevenue = revenue * (currentLift / 100);
 
-    // If useRevenueMode, track incremental revenue; otherwise track incremental profit
-    const monthlyValue = useRevenueMode
-      ? monthlyIncrementalRevenue
-      : monthlyIncrementalRevenue * (margin / 100);
-    cumValue += monthlyValue;
+    // Always track incremental revenue, apply margin at the end
+    cumValue += monthlyIncrementalRevenue;
 
     results.push({ cumInvest, cumProfit: cumValue, net: cumValue - cumInvest });
   }
 
-  const year1Value = results[11]?.net || 0;
+  // Calculate final values
+  const year1GrossRevenue = results[11]?.cumProfit || 0;
+  const year1NetRevenue = results[11]?.net || 0; // Gross revenue minus investment
+
+  // In profit mode, apply margin to net revenue (not gross)
+  // This correctly accounts for investment before calculating profit
+  const year1Value = useRevenueMode
+    ? year1NetRevenue
+    : year1NetRevenue * (margin / 100);
+
   const year1ROI = cumInvest > 0 ? (year1Value / cumInvest) * 100 : 0;
 
   return { results, year1Profit: year1Value, year1ROI };
