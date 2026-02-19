@@ -194,9 +194,31 @@ input[type="number"]:hover::-webkit-outer-spin-button {
 @media print {
   body {
     background: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .no-print {
     display: none !important;
+  }
+
+  /* Hide input panel, show results full-width */
+  .lg\:col-span-2 {
+    display: none !important;
+  }
+  .lg\:col-span-3 {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* Remove animations and shadows for cleaner print */
+  * {
+    animation: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure charts render with colors */
+  svg {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }

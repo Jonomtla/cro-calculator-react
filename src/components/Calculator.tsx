@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 import InputField from './InputField';
 import ResultItem from './ResultItem';
 import ScenarioCard from './ScenarioCard';
@@ -104,7 +102,6 @@ export default function Calculator() {
   const [forecastMode, setForecastMode] = useState<'net' | 'gross'>('net');
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(true);
 
   // Track if forecast is in view
@@ -305,57 +302,9 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
     });
   };
 
-  // PDF Export
-  const exportToPDF = async () => {
-    if (!reportRef.current) return;
-    setIsExporting(true);
-
-    try {
-      // Create canvas with specific options for better compatibility
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#f2efe6',
-        logging: false,
-      });
-
-      const imgData = canvas.toDataURL('image/png', 1.0);
-
-      // A4 dimensions in mm
-      const pdfWidth = 210;
-      const pdfHeight = 297;
-
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      // If content is taller than one page, handle multi-page
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
-
-      pdf.save('CRO-ROI-Report-IMPACT.pdf');
-    } catch (error) {
-      console.error('PDF export failed:', error);
-      alert('PDF export failed. Please try again or use Copy Results instead.');
-    } finally {
-      setIsExporting(false);
-    }
+  // PDF Export via browser print (reliable, handles SVGs/charts)
+  const exportToPDF = () => {
+    window.print();
   };
 
   return (
@@ -756,13 +705,12 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
 
         <button
           onClick={exportToPDF}
-          disabled={isExporting}
-          className="flex items-center gap-2 px-5 py-3 bg-[#10222b] hover:bg-[#243e42] text-white rounded-xl text-sm font-semibold transition-all hover-lift disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-3 bg-[#10222b] hover:bg-[#243e42] text-white rounded-xl text-sm font-semibold transition-all hover-lift"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          {isExporting ? 'Generating...' : 'Download PDF'}
+          Download PDF
         </button>
       </div>
 
