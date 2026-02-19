@@ -39,7 +39,7 @@ function calculateForecastScenario(
 ): ForecastScenario {
   const results: ForecastResult[] = [];
   let cumInvest = 0;
-  let cumValue = 0;  // Either cumulative profit or cumulative revenue
+  let cumIncrementalRevenue = 0;
 
   // Realistic CRO ramp-up model:
   // - Month 1: Research/audit period (0% lift)
@@ -64,26 +64,26 @@ function calculateForecastScenario(
 
     // Calculate incremental revenue for THIS month based on current lift
     const monthlyIncrementalRevenue = revenue * (currentLift / 100);
+    cumIncrementalRevenue += monthlyIncrementalRevenue;
 
-    // Always track incremental revenue, apply margin at the end
-    cumValue += monthlyIncrementalRevenue;
+    // cumProfit = cumulative gross profit from incremental revenue, minus cumulative investment
+    // In revenue mode, cumProfit = cumulative incremental revenue (no margin applied)
+    const cumGrossProfit = useRevenueMode
+      ? cumIncrementalRevenue
+      : cumIncrementalRevenue * (margin / 100);
+    const netProfit = cumGrossProfit - cumInvest;
 
-    results.push({ cumInvest, cumProfit: cumValue, net: cumValue - cumInvest });
+    results.push({ cumInvest, cumProfit: cumGrossProfit, net: netProfit });
   }
 
-  // Calculate final values
-  const year1GrossRevenue = results[11]?.cumProfit || 0;
-  const year1NetRevenue = results[11]?.net || 0; // Gross revenue minus investment
+  // Year 1 net profit (or net revenue in revenue mode) = gross profit - total investment
+  const year1Net = results[11]?.net || 0;
+  const totalInvest = results[11]?.cumInvest || 0;
 
-  // In profit mode, apply margin to net revenue (not gross)
-  // This correctly accounts for investment before calculating profit
-  const year1Value = useRevenueMode
-    ? year1NetRevenue
-    : year1NetRevenue * (margin / 100);
+  // ROI = net return / total investment * 100
+  const year1ROI = totalInvest > 0 ? (year1Net / totalInvest) * 100 : 0;
 
-  const year1ROI = cumInvest > 0 ? (year1Value / cumInvest) * 100 : 0;
-
-  return { results, year1Profit: year1Value, year1ROI };
+  return { results, year1Profit: year1Net, year1ROI };
 }
 
 export default function Calculator() {

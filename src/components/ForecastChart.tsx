@@ -7,6 +7,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  ReferenceLine,
   ResponsiveContainer,
 } from 'recharts';
 
@@ -24,9 +25,11 @@ interface ForecastChartProps {
 }
 
 const formatValue = (value: number) => {
-  if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-  if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`;
-  return `$${value.toFixed(0)}`;
+  const abs = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+  if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(1)}M`;
+  if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(0)}k`;
+  return `${sign}$${abs.toFixed(0)}`;
 };
 
 interface CustomTooltipProps {
@@ -66,22 +69,21 @@ export default function ForecastChart({
   bestData,
   isRevenueMode = false,
 }: ForecastChartProps) {
-  // Show cumulative profit/revenue vs cumulative investment
-  // This lets you see when profit line crosses above investment (break-even)
+  // Show cumulative net profit/revenue (after investment) over 12 months
+  // Lines crossing $0 = break-even point. M12 values match the scenario cards.
   const chartData = Array.from({ length: 12 }, (_, i) => ({
     month: `M${i + 1}`,
     fullMonth: `Month ${i + 1}`,
-    investment: conservativeData[i]?.cumInvest || 0,
-    conservative: conservativeData[i]?.cumProfit || 0,
-    target: targetData[i]?.cumProfit || 0,
-    best: bestData[i]?.cumProfit || 0,
+    conservative: conservativeData[i]?.net || 0,
+    target: targetData[i]?.net || 0,
+    best: bestData[i]?.net || 0,
   }));
 
   return (
     <div className="bg-white border-2 border-[#9abbd8]/20 p-6 rounded-2xl card-shadow animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <h4 className="text-sm font-semibold text-[#10222b]">Cumulative {isRevenueMode ? 'Revenue' : 'Profit'} vs Investment</h4>
+          <h4 className="text-sm font-semibold text-[#10222b]">Cumulative Net {isRevenueMode ? 'Revenue' : 'Profit'} (After Investment)</h4>
           {isRevenueMode && (
             <span className="text-[10px] font-semibold bg-[#9abbd8]/20 text-[#4e7597] px-2 py-1 rounded">
               TOPLINE REVENUE
@@ -120,12 +122,9 @@ export default function ForecastChart({
                 <stop offset="5%" stopColor="#7e84e5" stopOpacity={0.3}/>
                 <stop offset="95%" stopColor="#7e84e5" stopOpacity={0}/>
               </linearGradient>
-              <linearGradient id="colorInvest" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#bfbfbf" stopOpacity={0.2}/>
-                <stop offset="95%" stopColor="#bfbfbf" stopOpacity={0}/>
-              </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(154, 187, 216, 0.2)" />
+            <ReferenceLine y={0} stroke="#bfbfbf" strokeWidth={1.5} strokeDasharray="4 4" label={{ value: 'Break-even', position: 'right', fontSize: 10, fill: '#999' }} />
             <XAxis
               dataKey="month"
               tick={{ fontSize: 11, fill: '#565656' }}
@@ -140,15 +139,6 @@ export default function ForecastChart({
               width={60}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Area
-              type="monotone"
-              dataKey="investment"
-              stroke="#bfbfbf"
-              strokeWidth={2}
-              strokeDasharray="5 5"
-              fillOpacity={0}
-              name="Investment"
-            />
             <Area
               type="monotone"
               dataKey="conservative"
