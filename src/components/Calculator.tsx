@@ -198,8 +198,20 @@ export default function Calculator() {
   const mult = yearly ? 12 : 1;
   const period = yearly ? 'Yearly' : 'Monthly';
 
-  const incRev = sessions * (cr / 100) * (lift / 100) * aov;
-  const incProfit = incRev * (margin / 100);
+  // Monthly values at full lift (used for monthly view)
+  const incRevMonthly = sessions * (cr / 100) * (lift / 100) * aov;
+  const incProfitMonthly = incRevMonthly * (margin / 100);
+
+  // Year 1 values with ramp-up (from target forecast using user's lift)
+  // Always compute revenue-mode forecast for the comparison/impact sections
+  const targetRevForecast = calculateForecastScenario(revenue, margin, invest, lift, 12, true);
+  const targetProfitForecast = calculateForecastScenario(revenue, margin, invest, lift, 12, false);
+  const year1IncRev = targetRevForecast.results[11]?.cumProfit || 0;  // cumulative incremental revenue
+  const year1IncProfit = targetProfitForecast.results[11]?.cumProfit || 0;  // cumulative gross profit
+
+  // Use monthly at-full-lift for monthly view, ramp-adjusted for yearly view
+  const incRev = yearly ? year1IncRev : incRevMonthly;
+  const incProfit = yearly ? year1IncProfit : incProfitMonthly;
 
   // Confidence intervals (conservative: -20%, optimistic: +30%)
   const incRevLow = incRev * 0.8;
@@ -274,11 +286,11 @@ ${invest > 0 ? `Monthly CRO Investment: ${formatCurrency(invest)}` : ''}
 ${period.toUpperCase()} IMPACT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Current Revenue: ${formatCurrency(revenue * mult)}
-Projected Revenue: ${formatCurrency((revenue + incRev) * mult)}
-Incremental Revenue: +${formatCurrency(incRev * mult)}
-  └ Range: ${formatCurrency(incRevLow * mult)} - ${formatCurrency(incRevHigh * mult)}
-${margin > 0 ? `Incremental Profit: ${formatCurrency(incProfit * mult)}
-  └ Range: ${formatCurrency(incProfitLow * mult)} - ${formatCurrency(incProfitHigh * mult)}` : ''}
+Projected Revenue: ${formatCurrency(yearly ? (revenue * 12) + year1IncRev : revenue + incRevMonthly)}
+Incremental Revenue: +${formatCurrency(incRev)}
+  └ Range: ${formatCurrency(incRevLow)} - ${formatCurrency(incRevHigh)}
+${margin > 0 ? `Incremental Profit: ${formatCurrency(incProfit)}
+  └ Range: ${formatCurrency(incProfitLow)} - ${formatCurrency(incProfitHigh)}` : ''}
 ${cac > 0 ? `
 CAC Impact: ${formatCAC(cac)} → ${formatCAC(improvedCAC)} (-${cacReductionPct.toFixed(1)}%)` : ''}
 ${invest > 0 && margin > 0 ? `
@@ -488,15 +500,15 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
                   <h3 className="font-semibold text-[#243e42]">With CRO</h3>
                 </div>
                 <div className="text-3xl font-bold text-[#72ab7f] mb-1">
-                  {formatCurrency((revenue + incRev) * mult)}
+                  {formatCurrency(yearly ? (revenue * 12) + year1IncRev : revenue + incRevMonthly)}
                 </div>
                 <div className="text-sm text-[#565656]">{period} Revenue</div>
                 <div className="mt-3 pt-3 border-t border-[#72ab7f]/20">
                   <div className="text-sm text-[#243e42]">
-                    <span className="font-medium">{((sales * (1 + lift / 100)) * mult).toLocaleString()}</span> sales
+                    <span className="font-medium">{Math.round((sales * (1 + lift / 100)) * mult).toLocaleString()}</span> sales {yearly ? '(at full lift)' : ''}
                   </div>
                   <div className="text-sm text-[#243e42]">
-                    <span className="font-medium">{(cr * (1 + lift / 100)).toFixed(2)}%</span> conversion rate
+                    <span className="font-medium">{(cr * (1 + lift / 100)).toFixed(2)}%</span> conversion rate (at full lift)
                   </div>
                 </div>
               </div>
@@ -541,16 +553,16 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
 
               <ResultItem
                 label={`Incremental ${period} Revenue`}
-                value={`+${formatCurrency(incRev * mult)}`}
-                subValue={`Range: ${formatCurrency(incRevLow * mult)} - ${formatCurrency(incRevHigh * mult)}`}
+                value={`+${formatCurrency(incRev)}`}
+                subValue={`Range: ${formatCurrency(incRevLow)} - ${formatCurrency(incRevHigh)}`}
                 variant="highlight"
                 highlighted
                 animationDelay={100}
               />
               <ResultItem
                 label={`Incremental ${period} Profit`}
-                value={margin > 0 ? formatCurrency(incProfit * mult) : '—'}
-                subValue={margin > 0 ? `Range: ${formatCurrency(incProfitLow * mult)} - ${formatCurrency(incProfitHigh * mult)}` : undefined}
+                value={margin > 0 ? formatCurrency(incProfit) : '—'}
+                subValue={margin > 0 ? `Range: ${formatCurrency(incProfitLow)} - ${formatCurrency(incProfitHigh)}` : undefined}
                 variant={margin > 0 ? 'default' : 'muted'}
                 animationDelay={200}
               />
