@@ -101,6 +101,7 @@ export default function Calculator() {
   const [cac, setCac] = useState(25);
   const [invest, setInvest] = useState(0);
   const [yearly, setYearly] = useState(false);
+  const [forecastMode, setForecastMode] = useState<'net' | 'gross'>('net');
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -215,8 +216,10 @@ export default function Calculator() {
     ? (invest / (margin / 100)) / (sessions * (cr / 100) * aov) * 100
     : 0;
 
-  // Forecast calculations - use revenue mode if margin is not provided
-  const useRevenueMode = margin <= 0;
+  // Forecast calculations
+  // If margin is not provided, force gross revenue mode
+  // Otherwise, respect the user's toggle between net profit and gross revenue
+  const useRevenueMode = margin <= 0 || forecastMode === 'gross';
   const conservativeForecast = calculateForecastScenario(revenue, margin, invest, 10, 12, useRevenueMode);
   const targetForecast = calculateForecastScenario(revenue, margin, invest, 20, 12, useRevenueMode);
   const bestForecast = calculateForecastScenario(revenue, margin, invest, 40, 12, useRevenueMode);
@@ -629,12 +632,36 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
                   <p className="text-sm text-[#565656]">Projected outcomes across different scenarios</p>
                 </div>
               </div>
-              {useRevenueMode && (
+              {margin > 0 && (
+                <div className="flex items-center gap-1 bg-[#f4faff] border border-[#9abbd8]/30 rounded-lg p-1">
+                  <button
+                    onClick={() => setForecastMode('net')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                      forecastMode === 'net'
+                        ? 'bg-white text-[#10222b] shadow-sm'
+                        : 'text-[#565656] hover:text-[#10222b]'
+                    }`}
+                  >
+                    Net Profit
+                  </button>
+                  <button
+                    onClick={() => setForecastMode('gross')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                      forecastMode === 'gross'
+                        ? 'bg-white text-[#10222b] shadow-sm'
+                        : 'text-[#565656] hover:text-[#10222b]'
+                    }`}
+                  >
+                    Gross Revenue
+                  </button>
+                </div>
+              )}
+              {margin <= 0 && (
                 <div className="flex items-center gap-2 bg-[#f4faff] border border-[#9abbd8]/30 rounded-lg px-3 py-2">
                   <svg className="w-4 h-4 text-[#4e7597]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-xs text-[#4e7597] font-medium">Showing topline revenue (add margin for profit)</span>
+                  <span className="text-xs text-[#4e7597] font-medium">Add margin for profit view</span>
                 </div>
               )}
             </div>
