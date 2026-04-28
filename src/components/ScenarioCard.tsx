@@ -4,6 +4,7 @@ interface ScenarioCardProps {
   title: string;
   profit: string;
   detail: string;
+  requirement?: string;
   variant: 'conservative' | 'target' | 'best';
   animationDelay?: number;
   isRevenueMode?: boolean;
@@ -13,6 +14,7 @@ export default function ScenarioCard({
   title,
   profit,
   detail,
+  requirement,
   variant,
   animationDelay = 0,
   isRevenueMode = false,
@@ -83,6 +85,12 @@ export default function ScenarioCard({
       <div className="text-xs text-[#4e7597] bg-white/50 rounded-lg px-3 py-2">
         {detail}
       </div>
+
+      {requirement && (
+        <div className="text-[11px] text-[#565656] mt-2 px-1 leading-snug">
+          {requirement}
+        </div>
+      )}
     </div>
   );
 }

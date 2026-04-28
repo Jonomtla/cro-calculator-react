@@ -164,7 +164,7 @@ export default function ForecastChart({
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorBest)"
-              name="Best Case (40%)"
+              name="Best Case (30%)"
             />
           </AreaChart>
         </ResponsiveContainer>

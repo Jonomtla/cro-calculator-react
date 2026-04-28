@@ -41,22 +41,25 @@ function calculateForecastScenario(
 
   // Realistic CRO ramp-up model:
   // - Month 1: Research/audit period (0% lift)
-  // - Months 2-12: Linear ramp from 0% to target lift
+  // - Months 2-12: Smoothstep ramp from 0% to target lift
   //
-  // Year 1 produces ~6 months worth of full target lift
-  // This reflects the reality that CRO programs take time to build momentum
+  // Smoothstep curve (S-shape): slow start while first tests build,
+  // faster compounding mid-program as winners stack, plateau at end as
+  // easy wins get captured. Year-1 cumulative ≈ same as linear (6mo of
+  // full lift) but timing matches real-world program shape.
 
   for (let m = 1; m <= months; m++) {
     cumInvest += investment;
 
     // Ramp with 1-month research/setup phase
-    // M1 = 0%, then linear ramp to target by M12
+    // M1 = 0%, then smoothstep ramp to target by M12
     let rampProgress = 0;
     if (m <= 1) {
       rampProgress = 0; // Research/audit phase
     } else {
-      // Linear ramp from month 2 to 12 (11 testing months)
-      rampProgress = (m - 1) / 11; // 0.091, 0.182, ... 1.0
+      // Smoothstep curve: t * t * (3 - 2t)
+      const t = (m - 1) / 11; // 0 → 1 over months 2-12
+      rampProgress = t * t * (3 - 2 * t);
     }
     const currentLift = targetLift * rampProgress;
 
@@ -231,7 +234,7 @@ export default function Calculator() {
   const useRevenueMode = margin <= 0 || forecastMode === 'gross';
   const conservativeForecast = calculateForecastScenario(revenue, margin, invest, 10, 12, useRevenueMode);
   const targetForecast = calculateForecastScenario(revenue, margin, invest, 20, 12, useRevenueMode);
-  const bestForecast = calculateForecastScenario(revenue, margin, invest, 40, 12, useRevenueMode);
+  const bestForecast = calculateForecastScenario(revenue, margin, invest, 30, 12, useRevenueMode);
 
   // Always show forecast (works with or without investment/margin)
   const showForecast = revenue > 0;
@@ -264,7 +267,7 @@ export default function Calculator() {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Conservative (10% lift): ${formatProfit(conservativeForecast.year1Profit)}${invest > 0 && !useRevenueMode ? ` · ${conservativeForecast.year1ROI.toFixed(0)}% ROI` : ''}
 Target (20% lift): ${formatProfit(targetForecast.year1Profit)}${invest > 0 && !useRevenueMode ? ` · ${targetForecast.year1ROI.toFixed(0)}% ROI` : ''}
-Best Case (40% lift): ${formatProfit(bestForecast.year1Profit)}${invest > 0 && !useRevenueMode ? ` · ${bestForecast.year1ROI.toFixed(0)}% ROI` : ''}
+Best Case (30% lift): ${formatProfit(bestForecast.year1Profit)}${invest > 0 && !useRevenueMode ? ` · ${bestForecast.year1ROI.toFixed(0)}% ROI` : ''}
 ` : '';
 
     const text = `CRO ROI CALCULATOR RESULTS
@@ -275,7 +278,7 @@ YOUR INPUTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Monthly Sessions: ${sessions.toLocaleString()}
 Conversion Rate: ${cr.toFixed(2)}%
-Target Lift: ${lift}%
+Year 1 Cumulative Lift: ${lift}%
 Monthly Revenue: ${formatCurrency(revenue)}
 ${margin > 0 ? `Gross Margin: ${margin}%` : ''}
 ${invest > 0 ? `Monthly CRO Investment: ${formatCurrency(invest)}` : ''}
@@ -352,7 +355,8 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
                 suffix="%"
               />
               <InputField
-                label="Target Lift"
+                label="Year 1 Cumulative Lift"
+                hint="compounded across all tests"
                 value={lift}
                 onChange={setLift}
                 step="0.1"
@@ -529,11 +533,11 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
                     You need a <span className="font-bold text-[#4e7597]">{breakEvenLift.toFixed(1)}%</span> conversion lift to break even on your investment.
                     {lift >= breakEvenLift ? (
                       <span className="ml-1 text-[#72ab7f] font-medium">
-                        Your target lift of {lift}% exceeds this!
+                        Your projected lift of {lift}% exceeds this!
                       </span>
                     ) : (
                       <span className="ml-1 text-[#e57373] font-medium">
-                        Consider increasing your target lift.
+                        Consider increasing your projected lift.
                       </span>
                     )}
                   </p>
@@ -632,6 +636,7 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
                 title="Conservative"
                 profit={formatProfit(conservativeForecast.year1Profit)}
                 detail={invest > 0 && !useRevenueMode ? `10% lift · ${conservativeForecast.year1ROI.toFixed(0)}% ROI` : '10% lift target'}
+                requirement="≈ 8 winning tests over 12 months"
                 variant="conservative"
                 animationDelay={100}
                 isRevenueMode={useRevenueMode}
@@ -640,6 +645,7 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
                 title="Target"
                 profit={formatProfit(targetForecast.year1Profit)}
                 detail={invest > 0 && !useRevenueMode ? `20% lift · ${targetForecast.year1ROI.toFixed(0)}% ROI` : '20% lift target'}
+                requirement="≈ 16 winning tests over 12 months"
                 variant="target"
                 animationDelay={200}
                 isRevenueMode={useRevenueMode}
@@ -647,7 +653,8 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
               <ScenarioCard
                 title="Best Case"
                 profit={formatProfit(bestForecast.year1Profit)}
-                detail={invest > 0 && !useRevenueMode ? `40% lift · ${bestForecast.year1ROI.toFixed(0)}% ROI` : '40% lift target'}
+                detail={invest > 0 && !useRevenueMode ? `30% lift · ${bestForecast.year1ROI.toFixed(0)}% ROI` : '30% lift target'}
+                requirement="≈ 25 winning tests over 12 months"
                 variant="best"
                 animationDelay={300}
                 isRevenueMode={useRevenueMode}
@@ -670,10 +677,14 @@ Book your free CRO audit: https://www.impactconversion.com/#book`;
                   <p className="font-medium text-[#10222b]">Forecast assumptions:</p>
                   <ul className="space-y-0.5 text-[#565656]">
                     <li>• <strong>Month 1:</strong> Research period (audit, strategy) — no lift yet</li>
-                    <li>• <strong>Months 2-12:</strong> Linear ramp from 0% to target lift</li>
+                    <li>• <strong>Months 2-12:</strong> Smoothstep ramp (slow start, faster mid-program, plateau as easy wins are captured)</li>
                     <li>• Full target lift achieved by end of Year 1</li>
                     <li>• Year 1 cumulative equals ~6 months of full lift impact</li>
+                    <li>• &quot;Tests required&quot; assumes ~10% average winner size at industry win rate</li>
                   </ul>
+                  <p className="pt-2 text-[10px] text-[#565656]/80 italic">
+                    Win-rate baseline (~12%) sourced from Optimizely&apos;s analysis of 127,000+ experiments and Convert.com 2025 data. Mature programs aspire to 20-30% win rates.
+                  </p>
                 </div>
               </div>
             </div>
